@@ -1,0 +1,9 @@
+{
+    "name": "rxc",
+    "version": "0.0.1",
+    "engine": "*",
+    "main": "./index",
+    "dependencies"  : {
+        "underscore": "*"
+    }
+}
