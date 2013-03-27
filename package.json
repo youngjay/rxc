@@ -4,6 +4,7 @@
     "engine": "*",
     "main": "./index",
     "dependencies"  : {
-        "underscore": "*"
+        "underscore": "*",
+        "mocha": "*"
     }
 }
