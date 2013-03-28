@@ -5,6 +5,7 @@ var rfs = require('../fs');
 var path = require('path')
 
 var DATA_FILE_DIR = path.join(__dirname, 'data');
+var RECURSIVE_DIR = path.join(DATA_FILE_DIR, 'recursive');
 var TXT1 = path.join(DATA_FILE_DIR, '1.txt');
 var TXT2 = path.join(DATA_FILE_DIR, '2.txt');
 var TXT1_CONTENT = '100'
@@ -21,10 +22,29 @@ describe('fs', function() {
             })
         })
 
-
         it('rx merge file', function(done) {
             rx(file1, file2).subscribe(function() {
                 assert.deepEqual(slice.call(arguments), [TXT1_CONTENT, TXT2_CONTENT]);
+                done();
+            })
+        })
+    })
+
+    describe('#readdirRecursive', function() {
+        
+
+        it('should read all files right', function(done) {
+            rfs.readdirRecursive(RECURSIVE_DIR).subscribe(function(files) {
+                assert.equal(files.length, 3);
+                done();
+            })
+        })
+
+        it('should read all files right include hidden file and dir', function(done) {
+            rfs.readdirRecursive(RECURSIVE_DIR, {
+                skipHidden: false
+            }).subscribe(function(files) {
+                assert.equal(files.length, 5);
                 done();
             })
         })
