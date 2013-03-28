@@ -137,11 +137,12 @@ _.each(fs, function(fn, key) {
     }
 });
 
-_.extend(rfs, {
-    // `exists` has no err argument
-    exists: function(path) {
+// no err argument
+['exists'].forEach(function(key) {
+    rfs[key] = function(path) {
         return rx.fromCallback(function(fn) {
-            fs.exists(path, fn);
+            fs[key](path, fn);
         });
     }
-})
+});
+
