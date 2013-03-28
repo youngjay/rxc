@@ -6,6 +6,7 @@ var path = require('path')
 
 var DATA_FILE_DIR = path.join(__dirname, 'data');
 var RECURSIVE_DIR = path.join(DATA_FILE_DIR, 'recursive');
+var RECURSIVE_DIR_TEMP = path.join(DATA_FILE_DIR, 'recursive_temp');
 var TXT1 = path.join(DATA_FILE_DIR, '1.txt');
 var TXT2 = path.join(DATA_FILE_DIR, '2.txt');
 var TXT1_CONTENT = '100'
@@ -30,21 +31,52 @@ describe('fs', function() {
         })
     })
 
-    describe('#readdirRecursive', function() {
+    describe('#readdirr', function() {
         
 
         it('should read all files right', function(done) {
-            rfs.readdirRecursive(RECURSIVE_DIR).subscribe(function(files) {
+            rfs.readdirr(RECURSIVE_DIR).subscribe(function(files) {
                 assert.equal(files.length, 3);
                 done();
             })
         })
 
         it('should read all files right include hidden file and dir', function(done) {
-            rfs.readdirRecursive(RECURSIVE_DIR, {
+            rfs.readdirr(RECURSIVE_DIR, {
                 skipHidden: false
             }).subscribe(function(files) {
                 assert.equal(files.length, 5);
+                done();
+            })
+        })
+    })
+
+    describe('#cpr', function() {
+        it('should cp recursive', function(done) {
+            rfs.cpr(RECURSIVE_DIR, RECURSIVE_DIR_TEMP).computed(function() {
+                return rfs.readdirr(RECURSIVE_DIR_TEMP, {
+                    skipHidden: false
+                })
+            }).subscribe(function(files) {
+                assert.equal(files.length, 5);
+                done();
+            })
+        })
+    })
+
+    describe('#rmr', function() {
+        
+        it('should rm recursive', function(done) {
+            rfs.rmr(RECURSIVE_DIR_TEMP).computed(function(callback) {
+                callback(rfs.exists(RECURSIVE_DIR_TEMP))
+            }).subscribe(function(exists) {
+                assert.equal(exists, false);
+                done();
+            });
+        })
+
+        it('should rm recursive accept not exists dir', function(done) {
+            rfs.rmr('some_fake_dir').subscribe(function() {
                 done();
             })
         })
