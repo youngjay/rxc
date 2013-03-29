@@ -10,7 +10,8 @@ var isHidden = function(file) {
 };
 
 var readdirRecursiveDefaultOptions = {
-    skipHidden: true
+    hidden: false,
+    directory: false
 };
 
 var readdirr = function(dir, options) {
@@ -23,28 +24,34 @@ var readdirr = function(dir, options) {
                     return rfs.stat(p.join(curDir, path));
                 }), paths);
             })
-            .computed(function(fileStats, paths, callback) {
+            .computed(function(fileStats, paths) {
                 var dirs = [], files = [];
                 fileStats.forEach(function(stats, i) {
                     var path = p.join(curDir, paths[i]);  
 
-                    if (options.skipHidden && isHidden(path)) {
+                    if (isHidden(path) && !options.hidden) {
                         return;
                     }
 
                     if (stats.isDirectory()) {
                         dirs.push(process(path));
+
+                        if (options.directory) {
+                            files.push(path);
+                        }
                     } else {
                         files.push(path);
                     }
                 });
+
                 dirs.push(files);
-                callback(dirs);
+                
+                return dirs;
             })
-            .computed(function(filesInDirs, callback) {
-                callback(filesInDirs.reduce(function(all, filesInDir) {
+            .computed(function(filesInDirs) {
+                return filesInDirs.reduce(function(all, filesInDir) {
                     return all.concat(filesInDir)
-                }, []));
+                }, []);
             });
     };
     
@@ -54,23 +61,21 @@ var readdirr = function(dir, options) {
 var rmr = function(path) {
     
     var process = function(curPath) {  
-        return rfs.stat(curPath).computed(function(stats, callback) {
-            if (stats.isDirectory()) {
-                callback(rmdir(curPath));
-            } else {
-                callback(rfs.unlink(curPath));
-            }
-        })
+        return rfs.stat(curPath).computed(function(stats) {
+            return stats.isDirectory() ? rmdir(curPath) : rfs.unlink(curPath)
+        });
     };
 
     var rmdir = function(curPath) {
-        return rfs.readdir(curPath).computed(function(subPaths, callback) {
-            rx(subPaths.map(function(subPath) {
-                return process(p.join(curPath, subPath))
-            })).subscribe(function() {
-                rfs.rmdir(curPath).subscribe(callback)
-            });
-        });
+        return rfs.readdir(curPath)
+            .computed(function(subPaths) {
+                return subPaths.map(function(subPath) {
+                    return process(p.join(curPath, subPath))
+                })
+            })
+            .computed(function() {
+                return rfs.rmdir(curPath)
+            })
     };
 
     return rfs.exists(path).computed(function(exists, callback) {

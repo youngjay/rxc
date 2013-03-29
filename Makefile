@@ -16,6 +16,6 @@ install:
 	@npm install
 
 unit:
-	@mocha -R spec
+	@mocha
 
 .PHONY: install

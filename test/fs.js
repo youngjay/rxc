@@ -41,11 +41,30 @@ describe('fs', function() {
             })
         })
 
-        it('should read all files right include hidden file and dir', function(done) {
+        it('should read all files right include hidden file', function(done) {
             rfs.readdirr(RECURSIVE_DIR, {
-                skipHidden: false
+                hidden: true
             }).subscribe(function(files) {
                 assert.equal(files.length, 5);
+                done();
+            })
+        })
+
+        it('should read all files right include directory', function(done) {
+            rfs.readdirr(RECURSIVE_DIR, {
+                directory: true
+            }).subscribe(function(files) {
+                assert.equal(files.length, 5);
+                done();
+            })
+        })
+
+        it('should read all files right include hidden file and directory', function(done) {
+            rfs.readdirr(RECURSIVE_DIR, {
+                hidden: true,
+                directory: true
+            }).subscribe(function(files) {
+                assert.equal(files.length, 8);
                 done();
             })
         })
@@ -55,7 +74,7 @@ describe('fs', function() {
         it('should cp recursive', function(done) {
             rfs.cpr(RECURSIVE_DIR, RECURSIVE_DIR_TEMP).computed(function() {
                 return rfs.readdirr(RECURSIVE_DIR_TEMP, {
-                    skipHidden: false
+                    hidden: true
                 })
             }).subscribe(function(files) {
                 assert.equal(files.length, 5);
