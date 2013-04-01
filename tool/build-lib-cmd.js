@@ -9,13 +9,13 @@ var wrapCMD = function(str) {
 };
 
 rfs.rmr(dist)
-    .computed(function() {
+    .then(function() {
         return rfs.mkdir(dist);
     })
-    .computed(function() {
+    .then(function() {
         return rfs.readdirr(src);
     })
-    .computed(function(files, next) {
+    .then(function(files, next) {
         next(
             files.map(function(file) {
                 return file.substring(file.lastIndexOf('/') + 1);
@@ -25,7 +25,7 @@ rfs.rmr(dist)
             })
         )
     })
-    .computed(function(fileNames, contents) {
+    .then(function(fileNames, contents) {
         return contents.map(function(content, i) {
             return rfs.writeFile(p.join(dist, fileNames[i]), wrapCMD(content), 'utf8');
         });

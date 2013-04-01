@@ -85,7 +85,28 @@ describe('rx', function() {
 
     });
 
-    describe('#computed', function() {
+    describe('rx.then', function() {
+        it('should be subscribed', function(done) {
+            rx.then(function() {
+                return 1;
+            }).subscribe(function() {
+                assert.deepEqual(slice.call(arguments), [1]);
+                done();
+            })
+        });
+
+
+        it('should be subscribed', function(done) {
+            rx.then(function(callback) {
+                return callback(1, 2);
+            }).subscribe(function() {
+                assert.deepEqual(slice.call(arguments), [1, 2]);
+                done();
+            })
+        });
+    });
+
+    describe('#then', function() {
         var a, b;
 
         beforeEach(function() {
@@ -97,8 +118,8 @@ describe('rx', function() {
         })
 
 
-        it('computed args should be right', function(done) {
-            a.computed(function() {
+        it('then args should be right', function(done) {
+            a.then(function() {
                 assert.equal(arguments.length, 3)
                 assert.deepEqual(slice.call(arguments, 0, arguments.length - 1), [1,2]);
                 assert.equal(typeof arguments[arguments.length - 1], 'function');
@@ -106,8 +127,8 @@ describe('rx', function() {
             });
         });
 
-        it('computed args should be right', function(done) {
-            rx(a, b).computed(function() {
+        it('then args should be right', function(done) {
+            rx(a, b).then(function() {
                 assert.equal(arguments.length, 5)
                 assert.deepEqual(slice.call(arguments, 0, arguments.length - 1), [1,2,3,4]);
                 assert.equal(typeof arguments[arguments.length - 1], 'function');
@@ -115,8 +136,8 @@ describe('rx', function() {
             });
         });
 
-        it('computed args should be right', function(done) {
-            rx([a, b]).computed(function() {
+        it('then args should be right', function(done) {
+            rx([a, b]).then(function() {
                 assert.equal(arguments.length, 2)
                 assert.deepEqual(slice.call(arguments, 0, arguments.length - 1), [[1,2,3,4]]);
                 assert.equal(typeof arguments[arguments.length - 1], 'function');
@@ -125,8 +146,8 @@ describe('rx', function() {
         });
 
 
-        it('computed should pass right value', function(done) {
-            a.computed(function(j, k, fn) {
+        it('then should pass right value', function(done) {
+            a.then(function(j, k, fn) {
                 fn(k, j);
             }).subscribe(function() {
                 assert.equal(arguments.length, 2)
@@ -135,8 +156,8 @@ describe('rx', function() {
             });
         })
 
-        it('computed should pass right value', function(done) {
-            a.computed(function(j, k, fn) {
+        it('then should pass right value', function(done) {
+            a.then(function(j, k, fn) {
                 fn([k, j]);
             }).subscribe(function() {
                 assert.equal(arguments.length, 1)
@@ -145,8 +166,8 @@ describe('rx', function() {
             });
         })
 
-        it('computed auto proccess rx', function(done) {
-            a.computed(function(j, k, fn) {
+        it('then auto proccess rx', function(done) {
+            a.then(function(j, k, fn) {
                 var c = rx.mutable();
                 fn(c);
                 setTimeout(function() {

@@ -9,22 +9,22 @@ var isHidden = function(file) {
     return /(?:^|\/)\.\w+/.test(file);
 };
 
-var readdirRecursiveDefaultOptions = {
+var readdirrDefaultOptions = {
     hidden: false,
     directory: false
 };
 
 var readdirr = function(dir, options) {
-    options = _.defaults(options || {}, readdirRecursiveDefaultOptions);
+    options = _.defaults(options || {}, readdirrDefaultOptions);
 
     var process = function(curDir) {
         return rfs.readdir(curDir)
-            .computed(function(paths, callback) {
+            .then(function(paths, callback) {
                 callback(paths.map(function(path) {
                     return rfs.stat(p.join(curDir, path));
                 }), paths);
             })
-            .computed(function(fileStats, paths) {
+            .then(function(fileStats, paths) {
                 var dirs = [], files = [];
                 fileStats.forEach(function(stats, i) {
                     var path = p.join(curDir, paths[i]);  
@@ -48,7 +48,7 @@ var readdirr = function(dir, options) {
                 
                 return dirs;
             })
-            .computed(function(filesInDirs) {
+            .then(function(filesInDirs) {
                 return filesInDirs.reduce(function(all, filesInDir) {
                     return all.concat(filesInDir)
                 }, []);
@@ -61,24 +61,24 @@ var readdirr = function(dir, options) {
 var rmr = function(path) {
     
     var process = function(curPath) {  
-        return rfs.stat(curPath).computed(function(stats) {
+        return rfs.stat(curPath).then(function(stats) {
             return stats.isDirectory() ? rmdir(curPath) : rfs.unlink(curPath)
         });
     };
 
     var rmdir = function(curPath) {
         return rfs.readdir(curPath)
-            .computed(function(subPaths) {
+            .then(function(subPaths) {
                 return subPaths.map(function(subPath) {
                     return process(p.join(curPath, subPath))
                 })
             })
-            .computed(function() {
+            .then(function() {
                 return rfs.rmdir(curPath)
             })
     };
 
-    return rfs.exists(path).computed(function(exists, callback) {
+    return rfs.exists(path).then(function(exists, callback) {
         if (exists) {
             callback(process(path))
         } else {
@@ -89,16 +89,16 @@ var rmr = function(path) {
 
 var cpr = function(src, dist) {
     return rmr(dist)
-        .computed(function() {
+        .then(function() {
             return rfs.stat(src)
         })
-        .computed(function(stat) {
+        .then(function(stat) {
             return rfs.mkdir(dist, stat.mode);
         })
-        .computed(function() {
+        .then(function() {
             return rfs.readdir(src)
         })
-        .computed(function(paths, callback) {
+        .then(function(paths, callback) {
             callback(
                 paths.map(function(path) {
                     return rfs.stat(p.join(src, path));
@@ -106,7 +106,7 @@ var cpr = function(src, dist) {
                 paths
             ) 
         })
-        .computed(function(stats, paths) {
+        .then(function(stats, paths) {
             return stats.map(function(stat, i) {
                 var srcPath = p.join(src, paths[i]);
                 var distPath = p.join(dist, paths[i]);
@@ -116,12 +116,12 @@ var cpr = function(src, dist) {
                 }
 
                 if (stat.isSymbolicLink()) {
-                    return rfs.readlink(srcPath).computed(function(link){
+                    return rfs.readlink(srcPath).then(function(link){
                         return rfs.symlink(link, distPath);
                     });
                 }
 
-                return rfs.readFile(srcPath).computed(function(content) {
+                return rfs.readFile(srcPath).then(function(content) {
                     return rfs.writeFile(distPath, content);
                 })
             });
@@ -145,7 +145,7 @@ _.each(fs, function(fn, key) {
 // no err argument
 ['exists'].forEach(function(key) {
     rfs[key] = function(path) {
-        return rx.fromCallback(function(fn) {
+        return rx.then(function(fn) {
             fs[key](path, fn);
         });
     }

@@ -72,7 +72,7 @@ describe('fs', function() {
 
     describe('#cpr', function() {
         it('should cp recursive', function(done) {
-            rfs.cpr(RECURSIVE_DIR, RECURSIVE_DIR_TEMP).computed(function() {
+            rfs.cpr(RECURSIVE_DIR, RECURSIVE_DIR_TEMP).then(function() {
                 return rfs.readdirr(RECURSIVE_DIR_TEMP, {
                     hidden: true
                 })
@@ -86,7 +86,7 @@ describe('fs', function() {
     describe('#rmr', function() {
         
         it('should rm recursive', function(done) {
-            rfs.rmr(RECURSIVE_DIR_TEMP).computed(function(callback) {
+            rfs.rmr(RECURSIVE_DIR_TEMP).then(function(callback) {
                 callback(rfs.exists(RECURSIVE_DIR_TEMP))
             }).subscribe(function(exists) {
                 assert.equal(exists, false);
