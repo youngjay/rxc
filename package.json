@@ -1,10 +1,24 @@
 {
     "name": "rxc",
-    "version": "0.0.1",
+    "author": "youngjay <hiyoungjay@gmail.com>",
+    "description": "a reactive program tool",
+    "keywords": [
+        "reactive",
+        "async",
+        "event"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/youngjay/rxc.git"
+    },
+    "version": "0.0.2",
     "engine": "*",
     "main": "./index",
-    "dependencies"  : {
-        "underscore": "*",
+    "devDependencies": {
+        "mocha": "*",
         "spec": "*"
+    },
+    "dependencies"  : {
+        "underscore": "*"
     }
 }
