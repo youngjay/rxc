@@ -18,7 +18,7 @@ rfs.rmr(dist)
     .then(function(files, next) {
         next(
             files.map(function(file) {
-                return file.substring(file.lastIndexOf('/') + 1);
+                return file.substring(file.lastIndexOf(p.sep) + 1);
             }),
             files.map(function(file) {
                 return rfs.readFile(file, 'utf8');

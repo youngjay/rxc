@@ -8,8 +8,10 @@ var returnTrue = function() {return true};
 // `^` 路径开头
 // `/` linux下目录分隔符
 // ·\· windows下目录分隔符 
+var REG_HIDDEN = new RegExp('(?:^|\\' + p.sep + ')\\.\\w+');
+
 var isHidden = function(file) {
-    return /(?:^|\/|\\)\.\w+/.test(file);
+    return REG_HIDDEN.test(file);
 };
 
 var readdirrDefaultOptions = {
