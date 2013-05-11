@@ -1,9 +1,11 @@
 var assert = require("assert")
 var slice = [].slice;
 var rx = require('../index');
+var sinon = require('sinon');
 
 
 describe('rx', function() {
+
     describe('#mutable()', function() {
         var mu;
 
@@ -107,9 +109,10 @@ describe('rx', function() {
     });
 
     describe('#then', function() {
-        var a, b;
+        var a, b, spy;
 
         beforeEach(function() {
+            spy = sinon.spy();
             a = rx.mutable();
             b = rx.mutable();
 
@@ -118,31 +121,36 @@ describe('rx', function() {
         })
 
 
-        it('then args should be right', function(done) {
-            a.then(function() {
-                assert.equal(arguments.length, 3)
-                assert.deepEqual(slice.call(arguments, 0, arguments.length - 1), [1,2]);
-                assert.equal(typeof arguments[arguments.length - 1], 'function');
-                done();
-            });
-        });
+        // it('then args should be right', function(done) {
+        //     a.subscribe(function() {
+        //         assert.equal(arguments.length, 3)
+        //         assert.deepEqual(slice.call(arguments, 0, arguments.length - 1), [1,2]);
+        //         assert.equal(typeof arguments[arguments.length - 1], 'function');
+        //         done();
+        //     });
+        // });
 
-        it('then args should be right', function(done) {
-            rx(a, b).then(function() {
-                assert.equal(arguments.length, 5)
-                assert.deepEqual(slice.call(arguments, 0, arguments.length - 1), [1,2,3,4]);
-                assert.equal(typeof arguments[arguments.length - 1], 'function');
-                done();
-            });
-        });
+        // it('then args should be right', function(done) {
+        //     rx(a, b).subscribe(function() {
+        //         assert.equal(arguments.length, 5)
+        //         assert.deepEqual(slice.call(arguments, 0, arguments.length - 1), [1,2,3,4]);
+        //         assert.equal(typeof arguments[arguments.length - 1], 'function');
+        //         done();
+        //     });
+        // });
 
-        it('then args should be right', function(done) {
-            rx([a, b]).then(function() {
-                assert.equal(arguments.length, 2)
-                assert.deepEqual(slice.call(arguments, 0, arguments.length - 1), [[1,2,3,4]]);
-                assert.equal(typeof arguments[arguments.length - 1], 'function');
-                done();
-            });
+        // it('then args should be right', function(done) {
+        //     rx([a, b]).subscribe(function() {
+        //         assert.equal(arguments.length, 2)
+        //         assert.deepEqual(slice.call(arguments, 0, arguments.length - 1), [[1,2,3,4]]);
+        //         assert.equal(typeof arguments[arguments.length - 1], 'function');
+        //         done();
+        //     });
+        // });
+        
+        it('then should not call subscriber', function() {
+            a.then(spy);
+            assert.equal(spy.called, false);
         });
 
 
@@ -180,4 +188,33 @@ describe('rx', function() {
             });
         });
     });
+
+
+
+    describe('dispose', function() {
+        var mu;
+        var clock;
+
+        before(function () { clock = sinon.useFakeTimers(); });
+        after(function () { clock.restore(); });
+
+        beforeEach(function() {
+            clock = sinon.useFakeTimers();
+            mu = rx.then(function(callback) {
+                setTimeout(function() {
+                    callback();
+                }, 100)
+            });
+        });
+
+        it('should dispose when dispose was called after notify but before execute', function() {
+            var spy = sinon.spy();
+            var dispose = mu.subscribe(spy);
+            clock.tick(99);
+            dispose();
+            clock.tick(10);
+            assert.equal(spy.called, false);
+        })
+    });
+
 });

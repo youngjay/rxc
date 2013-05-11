@@ -16,7 +16,8 @@
     "main": "./index",
     "devDependencies": {
         "mocha": "*",
-        "spec": "*"
+        "spec": "*",
+        "sinon": "*"
     },
     "dependencies"  : {
         "underscore": "*"
