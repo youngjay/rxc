@@ -1,7 +1,21 @@
 var fs = require('fs');
 var _ = require('underscore');
-var rx = require('./index');
+var rx = require('../lib/index');
 var p = require('path');
+var slice = [].slice;
+
+var fromNodeStyleMethod = function(method, args, target) {
+    return rx.then(function(fn) {
+        method.apply(target, slice.call(args).concat(function(err) {
+            if (err) {
+                console.log(err);
+            } else {            
+                fn.apply(null, slice.call(arguments, 1));
+            }
+        }));
+    });
+};
+
 
 var returnTrue = function() {return true};
 
@@ -142,7 +156,7 @@ var rfs = module.exports = {
 _.each(fs, function(fn, key) {
     if (!/Sync$/.test(key)) {
         rfs[key] = function() {
-            return rx.fromNodeStyleMethod(fn, arguments);
+            return fromNodeStyleMethod(fn, arguments);
         };
     }
 });
@@ -155,4 +169,5 @@ _.each(fs, function(fn, key) {
         });
     }
 });
+
 

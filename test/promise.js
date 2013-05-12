@@ -69,12 +69,12 @@ describe('promise', function() {
 
         it('transform return promise like callback', function() {
             r1.then(function(a, next) {
-                return new Promise(function(callback) {
+                return [new Promise(function(callback) {
                     callback(a + 1)
-                });
+                })];
             }).subscribe(spy);
 
-            assert(spy.calledWith(2))
+            assert(spy.calledWith([2]))
         });
 
     })
