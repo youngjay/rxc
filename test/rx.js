@@ -29,8 +29,8 @@ describe('rx', function() {
             function() {
                 var self = this;
 
-                this.loadEvent = new Event();
-                this.idEditEvent = new Event();
+                this.loadEvent = rx.createPreservedEvent();
+                this.idEditEvent = rx.createPreservedEvent();
 
 
                 this.idChangeEvent = rx.when(this.idEditEvent).then(function(evt, callback) {
@@ -91,7 +91,7 @@ describe('rx', function() {
         var m, load;
         beforeEach(function() {
             m = new Model;
-            load = new Event();
+            load = rx.createEvent();
 
             m.setLoadEvent(load);
         })
@@ -172,7 +172,7 @@ describe('rx', function() {
 
             expect(spy).to.be.calledWith(0);
 
-            var idEditEvent = new Event();
+            var idEditEvent = rx.createEvent();
 
             m.setIdEditor(idEditEvent);
 
