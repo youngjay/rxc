@@ -2,6 +2,14 @@ var Promise = require('../lib/promise');
 var sinon = require('sinon');
 var assert = require('assert');
 var slice = [].slice;
+var Event = require('../lib/event');
+
+var Class = require('../lib/class');
+var PreservedEvent = require('../lib/preserved-event');
+var chai = require('chai');
+var sinonChai = require("sinon-chai");
+chai.use(sinonChai);
+var expect = chai.expect;
 
 describe('promise', function() {
     var r1 = new Promise(function(callback) {
@@ -26,21 +34,22 @@ describe('promise', function() {
         });
     })
 
-    describe('::new', function() {
-        it('evaluate promise', function() {
-            var a = new Promise(function(callback) {
-                callback(new Promise(function(callback2) {
-                    callback2(2)
-                }))
-            });
 
-            a.subscribe(spy);
+    // describe('::new', function() {
+    //     it('evaluate promise', function() {
+    //         var a = new Promise(function(callback) {
+    //             callback(new Promise(function(callback2) {
+    //                 callback2(2)
+    //             }))
+    //         });
 
-            assert(spy.calledWith(2))
-        });
-    });
+    //         a.subscribe(spy);
 
-    describe('then', function() {
+    //         assert(spy.calledWith(2))
+    //     });
+    // });
+
+    describe('#then', function() {
         it('should transform data', function() {
             r1.then(function(a, next) {
                 next(a + 1);
@@ -49,33 +58,105 @@ describe('promise', function() {
             });
         });
 
-        it('should transform promise data', function() {
-            r1.then(function(a, next) {
-                next(new Promise(function(callback) {
-                    callback(a + 1)
-                }));
-            }).subscribe(spy);
+        // it('should transform promise data', function() {
+        //     r1.then(function(a, next) {
+        //         next(new Promise(function(callback) {
+        //             callback(a + 1)
+        //         }));
+        //     }).subscribe(spy);
 
-            assert(spy.calledWith(2))
-        });
+        //     assert(spy.calledWith(2))
+        // });
 
-        it('transform return value like callback', function() {
-            r1.then(function(a, next) {
-                return a + 1;
-            }).subscribe(spy);
 
-            assert(spy.calledWith(2))
+
+
+        it('should call previous return  function when called', function() {
+            var host = new Event();
+
+
+            var p = new Promise(function(callback) {
+                return host.subscribe(callback);
+            });
+
+            p.then(function(a) {
+                return spy
+            }).done();
+
+
+            expect(spy).not.be.called;
+
+            host.notify(1)
+            host.notify(2)
+
+            expect(spy).be.called;
+
         })
 
-        it('transform return promise like callback', function() {
-            r1.then(function(a, next) {
-                return [new Promise(function(callback) {
-                    callback(a + 1)
-                })];
-            }).subscribe(spy);
+        it('should invoke return function when dispose is called', function() {
+            (r1.then(function() {
+                return spy
+            }).done())()
 
-            assert(spy.calledWith([2]))
-        });
+
+            expect(spy).be.called;
+        })
+
+
+        // it('should dispose previous when next is attached', function() {
+        //     var e1 = new Event();
+        //     var e2 = new Event();
+        //     var host = new Event();
+
+
+        //     var p = new Promise(function(callback) {
+        //         return host.subscribe(callback);
+        //     });
+
+        //     // p.then(function(evt) {
+        //     //     return evt.subscribe(spy);
+        //     // }).done();
+
+        //     p.then(spy).done()
+
+        //     host.notify(e1);
+        //     e1.notify('e1');
+        //     expect(spy).calledWith('e1')
+
+
+        //     spy.reset();
+        //     host.notify(e2);
+        //     e2.notify('e2');
+        //     expect(spy).calledWith('e2')
+
+
+        //     spy.reset();
+        //     e1.notify('e1');
+        //     expect(spy).not.to.be.called;
+
+
+        //     spy.reset();
+        //     e2.notify('e2');
+        //     expect(spy).calledWith('e2')
+
+        // })
+
+        it('should dispose for return dipose', function() {
+            r1.then(function(n, callback) {
+                
+            })
+        })
+
+
+        // it('transform return promise like callback', function() {
+        //     r1.then(function(a, next) {
+        //         return [new Promise(function(callback) {
+        //             callback(a + 1)
+        //         })];
+        //     }).subscribe(spy);
+
+        //     assert(spy.calledWith([2]))
+        // });
 
     })
 
@@ -177,5 +258,78 @@ describe('promise', function() {
         })
 
     })
+
+
+    describe('#dispose', function() {
+        it('should call handle return function', function() {
+
+            (new Promise(function() {
+                return spy
+            }).done())()
+
+            expect(spy).be.called;
+
+        })
+        
+    })
+
+    describe('pick', function() {
+
+        it('skip empty', function() {
+            var p = new Promise(function(callback) {
+                callback();
+            })
+
+            p.pick('a').subscribe(spy);
+
+            expect(spy).to.be.calledWithExactly();
+        })
+
+        it('pick all', function() {
+            var p = new Promise(function(callback) {
+                callback({
+                    a: 1,
+                    b: 2
+                }, {
+                    a: 10,
+                    b: 20
+                });
+            })
+
+            p.pick('a').subscribe(spy);
+
+            expect(spy).to.be.calledWithExactly({a: 1}, {a: 10});
+        })
+    })
+
+     describe('pluck', function() {
+
+        it('skip empty', function() {
+            var p = new Promise(function(callback) {
+                callback();
+            })
+
+            p.pluck('a').subscribe(spy);
+
+            expect(spy).to.be.calledWithExactly();
+        })
+
+        it('pluck all', function() {
+            var p = new Promise(function(callback) {
+                callback({
+                    a: 1,
+                    b: 2
+                }, {
+                    a: 10,
+                    b: 20
+                });
+            })
+
+            p.pluck('a').subscribe(spy);
+
+            expect(spy).to.be.calledWithExactly(1, 10);
+        })
+    })
+
 
 })

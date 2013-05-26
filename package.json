@@ -1,25 +1,39 @@
 {
-    "name": "rxc",
-    "author": "youngjay <hiyoungjay@gmail.com>",
-    "description": "a reactive program tool",
-    "keywords": [
-        "reactive",
-        "async",
-        "event"
-    ],
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/youngjay/rxc.git"
-    },
-    "version": "0.0.2",
-    "engine": "*",
-    "main": "./index",
-    "devDependencies": {
-        "mocha": "*",
-        "spec": "*",
-        "sinon": "*"
-    },
-    "dependencies"  : {
-        "underscore": "*"
-    }
+  "name": "rxc",
+  "author": "youngjay <hiyoungjay@gmail.com>",
+  "description": "a reactive program tool",
+  "keywords": [
+    "reactive",
+    "async",
+    "event"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/youngjay/rxc.git"
+  },
+  "version": "0.0.2",
+  "engine": "*",
+  "main": "./index",
+  "devDependencies": {
+    "mocha": "*",
+    "chai": "*",
+    "sinon-chai": "*",
+    "spec": "*",
+    "sinon": "*",
+    "grunt": "~0.4.1",
+    "grunt-contrib-uglify": "*"
+  },
+  "dependencies": {
+    "underscore": "*"
+  },
+  "gitHead": "de9da7c79e977974cf47b941f38f2675655fd3db",
+  "readmeFilename": "README.md",
+  "directories": {
+    "example": "example",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "license": "BSD"
 }
