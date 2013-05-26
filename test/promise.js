@@ -1,15 +1,17 @@
-var Promise = require('../lib/promise');
+var p = require('../lib/promise')
+var Promise = p.Promise;
 var sinon = require('sinon');
 var assert = require('assert');
 var slice = [].slice;
 var Event = require('../lib/event');
 
 var Class = require('../lib/class');
-var PreservedEvent = require('../lib/preserved-event');
 var chai = require('chai');
 var sinonChai = require("sinon-chai");
 chai.use(sinonChai);
 var expect = chai.expect;
+var when = p.when;
+var any = p.any;
 
 describe('promise', function() {
     var r1 = new Promise(function(callback) {
@@ -162,7 +164,7 @@ describe('promise', function() {
 
     describe('when', function() {
         it('call without args should notify', function(done) {
-            Promise.when().subscribe(function() {
+            when().subscribe(function() {
                 assert.equal(arguments.length, 0)
                 assert.deepEqual(slice.call(arguments), []);
                 done();
@@ -170,7 +172,7 @@ describe('promise', function() {
         });
 
         it('call without empty array should notify', function(done) {
-            Promise.when([]).subscribe(function() {
+            when([]).subscribe(function() {
                 assert.equal(arguments.length, 1)
                 assert.deepEqual(slice.call(arguments), [[]]);
                 done();
@@ -178,7 +180,7 @@ describe('promise', function() {
         });
 
         it('notify for each promise', function() {
-            Promise.when(a, new Promise(function(callback) {
+            when(a, new Promise(function(callback) {
                 callback(1);
                 setTimeout(function() {
                     callback(2)
@@ -194,7 +196,7 @@ describe('promise', function() {
 
          it('dispose', function() {
             var spy = sinon.spy();
-            var dispose = Promise.when(a, new Promise(function(callback) {
+            var dispose = when(a, new Promise(function(callback) {
                 callback(1);
                 setTimeout(function() {
                     callback(2)
@@ -210,7 +212,7 @@ describe('promise', function() {
 
 
         it('args should be right1', function(done) {
-            Promise.when(a, b).subscribe(function() {
+            when(a, b).subscribe(function() {
                 assert.equal(arguments.length, 4)
                 assert.deepEqual(slice.call(arguments), [1,2,3,4]);
                 done();
@@ -218,7 +220,7 @@ describe('promise', function() {
         });
 
         it('args should be right2', function(done) {
-            Promise.when([a, b]).subscribe(function() {
+            when([a, b]).subscribe(function() {
                 assert.equal(arguments.length, 1)
                 assert.deepEqual(slice.call(arguments), [[1,2,3,4]]);
                 done();
@@ -227,29 +229,29 @@ describe('promise', function() {
 
 
         it(' should be merged', function(done) {
-            Promise.when([a, b]).subscribe(function() {
+            when([a, b]).subscribe(function() {
                 assert.deepEqual(slice.call(arguments), [[1,2,3,4]])
                 done();
             });
         });
 
         it(' should be merged', function(done) {
-            Promise.when(a, [a, [a, b]]).subscribe(function() {
+            when(a, [a, [a, b]]).subscribe(function() {
                 assert.deepEqual(slice.call(arguments), [1,2,[1,2, [1,2,3,4]]])
                 done();
             });
         });
 
         it('im should be accept', function(done) {
-            Promise.when(a, [a, [a, b, 10], 10]).subscribe(function() {
+            when(a, [a, [a, b, 10], 10]).subscribe(function() {
                 assert.deepEqual(slice.call(arguments), [1,2,[1,2, [1,2,3,4, 10], 10]])
                 done();
             });
         });
 
         it('nested rx should be accept', function(done) {
-            var c = Promise.when(a, b);
-            var d = Promise.when([a], c);
+            var c = when(a, b);
+            var d = when([a], c);
 
             d.subscribe(function() {
                 assert.deepEqual(slice.call(arguments), [[1,2], 1,2,3,4])

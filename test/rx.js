@@ -29,27 +29,21 @@ describe('rx', function() {
             function() {
                 var self = this;
 
-                this.loadEvent = rx.createPreservedEvent();
-                this.idEditEvent = rx.createPreservedEvent();
+                this.loadEventSource = rx.createEventEvent();
+                this.idChangeEventSource = rx.createEventEvent();
 
+                this.idChangeEvent = this.idChangeEventSource.resolveEvent();
 
-                this.idChangeEvent = rx.when(this.idEditEvent).then(function(evt, callback) {
-                    return evt.subscribe(callback);
-                });
-
-
-                this.loadF = rx.any(
+                this.loadEvent = rx.any(
                     this.idChangeEvent.then(function(id, callback) {
                         callback({
                             id: id
                         })
                     }),
-                    rx.when(this.loadEvent).then(function(evt, callback) {
-                        return evt.subscribe(callback);
-                    })
+                    this.loadEventSource.resolveEvent()
                 );
 
-                this.remoteData = rx.preservedBy(this.loadF.then(function(query, callback) {
+                this.remoteData = rx.preserve(this.loadEvent.then(function(query, callback) {
                     return self.request(query, callback);
                 }));
 
@@ -71,12 +65,12 @@ describe('rx', function() {
                 )
             },
             {
-                setLoadEvent: function(evt) {
-                    this.loadEvent.notify(evt);
+                replaceLoadEvent: function(evt) {
+                    this.loadEventSource.replaceEvent(evt);
                 },
 
-                setIdEditor: function(evt) {
-                    this.idEditEvent.notify(evt);
+                replaceIdEvent: function(evt) {
+                    this.idChangeEventSource.replaceEvent(evt);
                 },
 
                 request: function(query, callback) {      
@@ -93,7 +87,7 @@ describe('rx', function() {
             m = new Model;
             load = rx.createEvent();
 
-            m.setLoadEvent(load);
+            m.replaceLoadEvent(load);
         })
 
         it('should set name', function() {
@@ -172,11 +166,11 @@ describe('rx', function() {
 
             expect(spy).to.be.calledWith(0);
 
-            var idEditEvent = rx.createEvent();
+            var idChangeEventSource = rx.createEvent();
 
-            m.setIdEditor(idEditEvent);
+            m.replaceIdEvent(idChangeEventSource);
 
-            idEditEvent.notify(10);
+            idChangeEventSource.notify(10);
 
             expect(spy).to.be.calledWith(10);
 
