@@ -43,7 +43,7 @@ var readdirr = function(dir, options) {
                     return rfs.stat(p.join(curDir, path));
                 }), paths);
             })
-            .then(function(fileStats, paths) {
+            .then(function(fileStats, paths, callback) {
                 var dirs = [], files = [];
                 fileStats.forEach(function(stats, i) {
                     var path = p.join(curDir, paths[i]);  
@@ -65,12 +65,12 @@ var readdirr = function(dir, options) {
 
                 dirs.push(files);
                 
-                return dirs;
+                callback(dirs);
             })
-            .then(function(filesInDirs) {
-                return filesInDirs.reduce(function(all, filesInDir) {
+            .then(function(filesInDirs, callback) {
+                callback(filesInDirs.reduce(function(all, filesInDir) {
                     return all.concat(filesInDir)
-                }, []);
+                }, []));
             });
     };
     
@@ -80,20 +80,20 @@ var readdirr = function(dir, options) {
 var rmr = function(path) {
     
     var process = function(curPath) {  
-        return rfs.stat(curPath).then(function(stats) {
-            return stats.isDirectory() ? rmdir(curPath) : rfs.unlink(curPath)
+        return rfs.stat(curPath).then(function(stats, callback) {
+            callback(stats.isDirectory() ? rmdir(curPath) : rfs.unlink(curPath))
         });
     };
 
     var rmdir = function(curPath) {
         return rfs.readdir(curPath)
-            .then(function(subPaths) {
-                return subPaths.map(function(subPath) {
+            .then(function(subPaths, callback) {
+                callback(subPaths.map(function(subPath) {
                     return process(p.join(curPath, subPath))
-                })
+                }))
             })
-            .then(function() {
-                return rfs.rmdir(curPath)
+            .then(function(results, callback) {
+                callback(rfs.rmdir(curPath));
             })
     };
 
@@ -108,14 +108,14 @@ var rmr = function(path) {
 
 var cpr = function(src, dist) {
     return rmr(dist)
-        .then(function() {
-            return rfs.stat(src)
+        .then(function(callback) {
+            callback(rfs.stat(src))
         })
-        .then(function(stat) {
-            return rfs.mkdir(dist, stat.mode);
+        .then(function(stat, callback) {
+            callback(rfs.mkdir(dist, stat.mode));
         })
-        .then(function() {
-            return rfs.readdir(src)
+        .then(function(callback) {
+            callback(rfs.readdir(src))
         })
         .then(function(paths, callback) {
             callback(
@@ -125,8 +125,8 @@ var cpr = function(src, dist) {
                 paths
             ) 
         })
-        .then(function(stats, paths) {
-            return stats.map(function(stat, i) {
+        .then(function(stats, paths, callback) {
+            callback(stats.map(function(stat, i) {
                 var srcPath = p.join(src, paths[i]);
                 var distPath = p.join(dist, paths[i]);
 
@@ -135,15 +135,18 @@ var cpr = function(src, dist) {
                 }
 
                 if (stat.isSymbolicLink()) {
-                    return rfs.readlink(srcPath).then(function(link){
-                        return rfs.symlink(link, distPath);
+                    return rfs.readlink(srcPath).then(function(link, callback){
+                        callback(rfs.symlink(link, distPath));
                     });
                 }
 
-                return rfs.readFile(srcPath).then(function(content) {
-                    return rfs.writeFile(distPath, content);
-                })
-            });
+                return rfs.readFile(srcPath).then(function(content, callback) {
+                    callback(rfs.writeFile(distPath, content));
+                });
+            }));
+        })
+        .then(function(results, callback) {
+            callback();
         })
 };
 

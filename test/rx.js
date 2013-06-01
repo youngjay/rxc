@@ -29,18 +29,16 @@ describe('rx', function() {
             function() {
                 var self = this;
 
-                this.loadEventSource = rx.createEventEvent();
-                this.idChangeEventSource = rx.createEventEvent();
-
-                this.idChangeEvent = this.idChangeEventSource.resolveEvent();
+                this.loadEventSource = rx.createEvent();
+                this.idChangeEventSource = rx.createEvent();
 
                 this.loadEvent = rx.any(
-                    this.idChangeEvent.then(function(id, callback) {
+                    this.idChangeEventSource.then(function(id, callback) {
                         callback({
                             id: id
                         })
                     }),
-                    this.loadEventSource.resolveEvent()
+                    this.loadEventSource
                 );
 
                 this.remoteData = rx.preserve(this.loadEvent.then(function(query, callback) {
@@ -60,17 +58,17 @@ describe('rx', function() {
                 })
 
                 this.id = rx.any(
-                    this.idChangeEvent,
+                    this.idChangeEventSource,
                     this.data.pluck('id')
                 )
             },
             {
                 replaceLoadEvent: function(evt) {
-                    this.loadEventSource.replaceEvent(evt);
+                    this.loadEventSource.notify(evt);
                 },
 
                 replaceIdEvent: function(evt) {
-                    this.idChangeEventSource.replaceEvent(evt);
+                    this.idChangeEventSource.notify(evt);
                 },
 
                 request: function(query, callback) {      
