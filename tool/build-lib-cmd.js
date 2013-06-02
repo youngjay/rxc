@@ -5,7 +5,7 @@ var dist = p.join(__dirname, '../lib-cmd');
 
 
 var wrapCMD = function(str) {
-    return 'define(function(require, exports, module) {\n\n    ' + str.replace(/(\n)/g, '$1    ') + '\n}';
+    return 'define(function(require, exports, module) {\n\n    ' + str.replace(/(\n)/g, '$1    ') + '\n})';
 };
 
 rfs.rmr(dist)
