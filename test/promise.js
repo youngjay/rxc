@@ -49,6 +49,17 @@ describe('promise', function() {
 
             assert(spy.calledWith(2))
         });
+
+
+        it('return promise', function() {
+            var a = new Promise(function(callback) {
+                return 2;
+            });
+
+            a.subscribe(spy);
+
+            assert(spy.calledWith(2))
+        })
     });
 
     describe('#then', function() {
@@ -70,7 +81,15 @@ describe('promise', function() {
             assert(spy.calledWith(2))
         });
 
+        it('should evaluate return promise data', function() {
+            r1.then(function(a, next) {
+                return new Promise(function(callback) {
+                    return a + 1
+                });
+            }).subscribe(spy);
 
+            assert(spy.calledWith(2))
+        });
 
 
         it('should call previous return  function when called', function() {
@@ -321,6 +340,5 @@ describe('promise', function() {
             expect(spy).to.be.calledWithExactly(1, 10);
         })
     })
-
 
 })
